@@ -15,8 +15,8 @@ step_depth      = 1
 what_to_do      = "train" # alternatives are: "optimise1", "optimise2", "train", "restore"
 rnn_cell        = "lstm" # alternatives are: "lstm", "stacked lstm", "gru", "stacked gru"
 rnn_units       = 32
-ntrain_data     = 10000 # should be 10k for optimisation and 55k for training
-ntest_data      = 2000 # should be 10k for training
+ntrain_data     = 55000 # should be 10k for optimisation and 55k for training
+ntest_data      = 10000 # should be 10k for training
 grad_clip       = True
 batch_norm      = True
 
