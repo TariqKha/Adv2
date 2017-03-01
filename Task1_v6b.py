@@ -24,7 +24,7 @@ batch_norm      = True
 max_op_iters    = 5
 lr_low          = 0.001
 lr_high         = 0.1
-/optimise_csv    = "C:/Users/Tariq/Desktop/UCL/GI13 Advanced/Assignment 2/T1_lstm_32units_optimised.csv"
+# optimise_csv    = "C:/Users/Tariq/Desktop/UCL/GI13 Advanced/Assignment 2/T1_lstm_32units_optimised.csv"
 optimise_csv    = "T1_lstm_32units_optimised.csv"
 
 # training
