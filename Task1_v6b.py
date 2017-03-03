@@ -2,21 +2,22 @@ import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 import numpy as np
 import copy
+import sys
 
 # Global parameters
 ## unchanging
 nclasses        = 10
-batch_size      = 250
+batch_size      = 256
 relu_units      = 100
 num_steps       = 784
 step_depth      = 1
 
 # master
 what_to_do      = "train" # alternatives are: "optimise1", "optimise2", "train", "restore"
-rnn_cell        = "lstm" # alternatives are: "lstm", "stacked lstm", "gru", "stacked gru"
+rnn_cell        = "gru" # alternatives are: "lstm", "stacked lstm", "gru", "stacked gru"
 rnn_units       = 32
-ntrain_data     = 55000 # should be 10k for optimisation and 55k for training
-ntest_data      = 10000 # should be 10k for training
+ntrain_data     = int(sys.argv[3]) # should be 10k for optimisation and 55k for training
+ntest_data      = int(sys.argv[4]) # should be 10k for training
 grad_clip       = True
 batch_norm      = True
 
@@ -25,17 +26,18 @@ max_op_iters    = 5
 lr_low          = 0.001
 lr_high         = 0.1
 # optimise_csv    = "C:/Users/Tariq/Desktop/UCL/GI13 Advanced/Assignment 2/T1_lstm_32units_optimised.csv"
-optimise_csv    = "T1_lstm_32units_optimised.csv"
+optimise_csv    = "T1_gru_32units_optimised.csv"
 
 # training
-max_iters       = 5
-lr_train        = 0.01
+#lr_train        = 0.01
+lr_train        = sys.argv[1]
+max_iters       = int(sys.argv[2])
 epsilon         = 1e-3
-# train_ckpt      = "C:/Users/Tariq/Desktop/UCL/GI13 Advanced/Assignment 2/T1_lstm_32units_trained.ckpt"
-# train_csv       = "C:/Users/Tariq/Desktop/UCL/GI13 Advanced/Assignment 2/T1_lstm_32units_trained.csv"
+#train_ckpt      = "C:/Users/Tariq/Desktop/UCL/GI13 Advanced/Assignment 2/T1_gru_32units_trained.ckpt"
+#train_csv       = "C:/Users/Tariq/Desktop/UCL/GI13 Advanced/Assignment 2/T1_gru_32units_trained.csv"
 
-train_ckpt      = "T1_lstm_32units_trained.ckpt"
-train_csv       = "T1_lstm_32units_trained.csv"
+train_ckpt      = "T1_gru_32units_trained.ckpt"
+train_csv       = "T1_gru_32units_trained.csv"
 
 
 def binarize(images, threshold=0.1):
@@ -150,8 +152,8 @@ def main():
             for startIndex, endIndex in zip(range(0, datalength, batch_size), \
                                             range(batch_size, datalength, batch_size)):
                 count = count + 1
-                if (startIndex) % 5000 == 0:
-                    print("Performance calcs ... startIndex", startIndex)
+                # if (startIndex) % 5000 == 0:
+                #     print("Performance calcs ... startIndex", startIndex)
                 acc = acc + sess.run(accuracy,
                                      feed_dict={X: xdata[startIndex:endIndex], Y: ylabels[startIndex:endIndex]})
                 theloss = theloss + sess.run(loss, feed_dict={X: xdata[startIndex:endIndex], Y: ylabels[startIndex:endIndex]})
@@ -260,8 +262,9 @@ def main():
 
 
         elif what_to_do == "train":
-            print ("Training started........")
             print("Learning rate", lr_train)
+
+            best_acc = 1e-3
 
             out = open(train_csv, 'w')
             out.write('%s;' % "Epoch")
@@ -271,13 +274,13 @@ def main():
             out.write('%s;' % "Test loss")
 
             for indexIter in range(max_iters):
-                print("Iteration", indexIter + 1)
+                # print("Iteration", indexIter + 1)
 
                 # Batched training
                 for startIndex, endIndex in zip(range(0,len(trainXreshape), batch_size), \
                                         range(batch_size, len(trainXreshape), batch_size)):
-                    if (startIndex) % 5000 == 0:
-                        print("Training ... startIndex", startIndex)
+                    # if (startIndex) % 5000 == 0:
+                    #     print("Training ... startIndex", startIndex)
                     sess.run(train_op, \
                              feed_dict={X: trainXreshape[startIndex:endIndex], \
                                         Y: trainY[startIndex:endIndex], \
@@ -285,9 +288,9 @@ def main():
 
                 # Only calculate training accuracy on ntestpoints of training data
                 acc_train, loss_train = calc_lossandacc(trainXreshape, trainY, len(testXreshape))
-                print("Training accuracy", acc_train, "Training loss", loss_train)
+                print("Iteration ", indexIter+1, "Training accuracy", acc_train, "Training loss", loss_train)
                 acc_test, loss_test = calc_lossandacc(testXreshape, testY, len(testXreshape))
-                print("Test accuracy", acc_test, "Test loss", loss_test)
+                print("Iteration", indexIter+1, "Test accuracy", acc_test, "Test loss", loss_test)
 
                 out.write('\n')
                 out.write('%d;' % indexIter)
@@ -296,8 +299,12 @@ def main():
                 out.write('%f;' % acc_test)
                 out.write('%f;' % loss_test)
 
+                if acc_test > best_acc:
+                    best_acc = acc_test
+                    saver.save(sess, train_ckpt)
+
             print ("Training finished.")
-            saver.save(sess, train_ckpt)
+            # saver.save(sess, train_ckpt)
             out.close()
             print ("Trained model saved.")
 
